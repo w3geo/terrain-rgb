@@ -24,6 +24,86 @@ Based on the ```osgeo/gdal``` docker image we install ```rasterio``` and a few p
 
 Since we mentioned Austria's Open Data initiative we will use the [DEM of Austria with a resolution of 10x10m](https://www.data.gv.at/katalog/dataset/b5de6975-417b-4320-afdb-eb2a9e2a1dbf). All steps below assume that you have downloaded and extracted the GeoTIFF file. As of Feb. 2020, the name of the file containing the data is ```dhm_at_lamb_10m_2018.tif```.
 
+```shell
+#!/bin/bash
+
+# Base URL
+BASE_URL="https://data.bev.gv.at/download/ALS/DSM/20230915"
+
+# Define the list of filenames
+lines=$(cat <<EOF
+ALS DSM CRS3035RES50000mN2550000E4650000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2600000E4300000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2600000E4350000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2600000E4400000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2600000E4450000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2600000E4500000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2600000E4550000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2600000E4600000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2600000E4650000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2600000E4700000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2600000E4750000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2650000E4250000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2650000E4300000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2650000E4350000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2650000E4400000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2650000E4450000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2650000E4500000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2650000E4550000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2650000E4600000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2650000E4650000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2650000E4700000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2650000E4750000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2650000E4800000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2700000E4250000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2700000E4300000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2700000E4350000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2700000E4400000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2700000E4450000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2700000E4500000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2700000E4550000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2700000E4600000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2700000E4650000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2700000E4700000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2700000E4750000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2700000E4800000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2750000E4500000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2750000E4550000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2750000E4600000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2750000E4650000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2750000E4700000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2750000E4750000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2750000E4800000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2750000E4850000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2800000E4500000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2800000E4550000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2800000E4600000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2800000E4650000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2800000E4700000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2800000E4750000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2800000E4800000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2850000E4600000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2850000E4650000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2850000E4700000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2850000E4750000 Höhenraster 1m Stichtag 15.09.2023
+ALS DSM CRS3035RES50000mN2850000E4800000 Höhenraster 1m Stichtag 15.09.2023
+EOF
+)
+
+# Now loop over the lines
+while read -r line; do
+    token=$(echo "$line" | awk '{print $3}')
+    filename="ALS_DSM_${token}.tif"
+    url="${BASE_URL}/${filename}"
+    echo "Downloading $filename..."
+    wget "$url"
+done <<< "$lines"
+```
+
+```shell
+gdalbuildvrt index.vrt ./ALS_DSM*.tif*
+```
+
 ### Inspecting the data
 
 Let's see what we have got so far by starting the container and run rasterio in order to collect some information. We'll start the docker container and mount our folder ```/Users/thomas/Development/geodata/ogd-10m-at``` with the  GeoTIFF inside to the folder ```/opt/dem``` within the container's filesystem. ```rio``` is the name of the image (see section #Tools) and we want Docker to execute the shell ```bash``` inside the container.
@@ -198,7 +278,7 @@ By using [QGIS](https://qgis.org) we can visualize our greyscale data. The areas
 
 ![DEM Visualization of Austria](images/DHM-Austria.png)
 
-## RGB-ify
+## RGB-ify to PNG MBTiles
 Now let's transform the greyscale data into the RGB data. The formula used to calculate the elevation is
 
 ```
@@ -211,10 +291,29 @@ So the ```base value``` is ```-10000``` and the ```interval``` (precision of the
   rio rgbify 
     -b -10000 
     -i 0.1
-    dhm_at_EPSG3857_10m_2018_None.tif
-    dhm_at_EPSG3857_10m_2018_RGB.tif
+    --min-z 0
+    --max-z 17
+    dhm_at_EPSG3857_10m_2018_LANCZOS.tif
+    dhm_at_EPSG3857_10m_2018_RGB.mbtiles
 ```
 
+## Convert to PMTiles
+
+The final step is to create PMTiles from the .mbtiles file, in order to be able to directly serve from an object storage (e.g. S3).
+
+To speed up a process, we need to add an index for the tiles to the .mbtiles SQLite database (see https://github.com/protomaps/go-pmtiles/issues/127#issuecomment-1952230955):
+
+```shell
+sqlite3
+sqlite> CREATE UNIQUE INDEX tile_index on tiles (zoom_level, tile_column, tile_row);
+sqlite> .exit
+```
+
+Now we can proceed with the conversion:
+
+```shell
+pmtiles convert --no-deduplication dhm_at_EPSG3857_10m_2018_RGB.mbtiles dhm_at_EPSG3857_10m_2018_RGB.pmtiles
+```
 
 The image below shows the elevation data encoded in RGB values. The _No Data_ area is now at elevation zero.
 
