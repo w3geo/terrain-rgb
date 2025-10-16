@@ -297,6 +297,15 @@ So the ```base value``` is ```-10000``` and the ```interval``` (precision of the
     dhm_at_EPSG3857_10m_2018_RGB.mbtiles
 ```
 
+If you get an error saying "densify_pts must be at least 2", edit `/usr/local/lib/python3.10/dist-packages/rio_rgbify/mbtiler.py`: Change the line that says
+```python
+w, s, e, n = transform_bounds*[sre_crs, "epsg:4326"] + bbox, densify_pts=0)
+```
+to
+```python
+w, s, e, n = transform_bounds*[sre_crs, "epsg:4326"] + bbox, densify_pts=2)
+```
+
 ## Convert to PMTiles
 
 The final step is to create PMTiles from the .mbtiles file, in order to be able to directly serve from an object storage (e.g. S3).
