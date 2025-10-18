@@ -7,7 +7,7 @@ ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
 ## install pip3 and Mapbox's RasterIO (rio)
 ## install plugins for rio from https://github.com/mapbox/rasterio/wiki/Rio-plugin-registry
-RUN apt-get -y update && apt-get install -y --fix-missing python3-pip vim proj-bin wget \
+RUN apt-get -y update && apt-get install -y --fix-missing python3-pip vim proj-bin wget sqlite3 \
     && pip3 install rasterio --break-system-packages \
     && pip3 install rio-rgbify --break-system-packages \
     && pip3 install rio-mbtiles --break-system-packages \
