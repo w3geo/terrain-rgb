@@ -313,7 +313,7 @@ The final step is to create PMTiles from the .mbtiles file, in order to be able 
 To speed up a process, we need to add an index for the tiles to the .mbtiles SQLite database (see https://github.com/protomaps/go-pmtiles/issues/127#issuecomment-1952230955):
 
 ```shell
-sqlite3
+sqlite3 dhm_at_EPSG3857_10m_2018_RGB.mbtiles
 sqlite> CREATE UNIQUE INDEX tile_index on tiles (zoom_level, tile_column, tile_row);
 sqlite> .exit
 ```
